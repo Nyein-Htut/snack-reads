@@ -1,0 +1,16 @@
+{
+  "name": "snack-reads",
+  "version": "1.0.0",
+  "description": "Bite-size daily articles, generated automatically",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "node-cron": "^3.0.3"
+  }
+}
