@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snack Reads — bite-size daily articles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFF8EE;
+    --paper-2:#FFF1DC;
+    --ink:#4A3B32;
+    --ink-soft:#8A7868;
+    --line:#E8DCC8;
+    --card:#FFFEFA;
+    --sidebar-w:240px;
+
+    --health:#FF8FA3;     --health-d:#C23B58;  --health-bg:#FFE3E9;
+    --beauty:#F6A6C1;     --beauty-d:#B83E6A;  --beauty-bg:#FFE9F2;
+    --wellbeing:#9AC9C0;  --wellbeing-d:#2F6E61;--wellbeing-bg:#E2F3EF;
+    --productivity:#FFC15E;--productivity-d:#B9740B;--productivity-bg:#FFF1D6;
+    --finance:#8FBF7F;    --finance-d:#3E7A2C;  --finance-bg:#E6F3DF;
+    --business:#7FA8D9;   --business-d:#2C5A95; --business-bg:#E2EEFA;
+    --technology:#B79CE0; --technology-d:#5B3E96;--technology-bg:#EDE5FA;
+    --facts:#FFA567;      --facts-d:#C0590E;    --facts-bg:#FFE8D3;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      radial-gradient(circle, #EADFC8 1px, transparent 1px);
+    background-size:22px 22px;
+    color:var(--ink);
+    font-family:'Quicksand',sans-serif;
+  }
+
+  .display{font-family:'Baloo 2',cursive;}
+
+  /* ---------- LAYOUT SHELL ---------- */
+  .shell{
+    display:flex;
+    align-items:flex-start;
+    min-height:100vh;
+  }
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar{
+    flex:0 0 var(--sidebar-w);
+    width:var(--sidebar-w);
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    padding:28px 16px 28px 22px;
+    border-right:2px dashed var(--line);
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+  }
+  .sidebar::-webkit-scrollbar{width:6px;}
+  .sidebar-logo{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:0 2px;
+  }
+  .sidebar-logo .logo-sticker{
+    font-size:26px;
+    transform:rotate(-8deg);
+    display:inline-block;
+  }
+  .sidebar-logo h1{
+    font-family:'Baloo 2',cursive;
+    font-weight:800;
+    font-size:21px;
+    margin:0;
+    color:var(--ink);
+    letter-spacing:0.3px;
+  }
+  .sidebar-tagline{
+    margin:0;
+    padding:0 2px;
+    color:var(--ink-soft);
+    font-size:12px;
+    font-weight:600;
+    line-height:1.5;
+  }
+  .date-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--card);
+    border:2px dashed var(--line);
+    border-radius:999px;
+    padding:7px 14px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    width:fit-content;
+  }
+
+  .cat-label{
+    font-family:'Baloo 2',cursive;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    opacity:0.7;
+    margin:4px 0 -6px 4px;
+  }
+  .cat-list{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .chip{
+    font-family:'Baloo 2',cursive;
+    font-weight:600;
+    font-size:14.5px;
+    padding:10px 14px;
+    border-radius:14px;
+    border:2px solid transparent;
+    background:transparent;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:transform .15s cubic-bezier(.34,1.56,.64,1), background .15s ease, color .15s ease, box-shadow .15s ease;
+    white-space:nowrap;
+    user-select:none;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    position:relative;
+  }
+  .chip .chip-emoji{font-size:16px; transition:transform .2s ease;}
+  .chip:hover{
+    background:var(--card);
+    transform:translateX(3px);
+  }
+  .chip:hover .chip-emoji{transform:scale(1.2) rotate(-8deg);}
+  .chip.active{
+    color:#fff;
+    box-shadow:0 3px 0 rgba(0,0,0,0.1);
+  }
+  .chip.active:hover{transform:translateX(0);}
+  .chip-count{
+    margin-left:auto;
+    font-size:11px;
+    font-weight:700;
+    opacity:0.75;
+    background:rgba(255,255,255,0.35);
+    border-radius:999px;
+    padding:1px 7px;
+  }
+  .chip:not(.active) .chip-count{
+    background:var(--paper-2);
+    color:var(--ink-soft);
+  }
+
+  .sidebar-footer{
+    margin-top:auto;
+    font-size:11px;
+    color:var(--ink-soft);
+    opacity:0.6;
+    padding:0 4px;
+    line-height:1.5;
+  }
+
+  /* ---------- MAIN ---------- */
+  .main{
+    flex:1 1 auto;
+    min-width:0;
+    padding:36px 28px 80px;
+  }
+
+  .top-area{
+    max-width:1080px;
+    margin:0 auto 8px;
+    text-align:center;
+  }
+  .mobile-logo{display:none;}
+
+  /* ---------- GENERATE PANEL ---------- */
+  .gen-panel{
+    max-width:560px;
+    margin:6px auto 30px;
+    background:var(--card);
+    border:2px solid var(--line);
+    border-radius:24px;
+    padding:22px 26px;
+    box-shadow:0 4px 0 rgba(74,59,50,0.06);
+    text-align:center;
+  }
+  .gen-panel-title{
+    font-family:'Baloo 2',cursive;
+    font-weight:700;
+    font-size:15px;
+    color:var(--ink);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+  }
+  .gen-panel-title .sw{
+    display:inline-block;
+    animation:swing 2.6s ease-in-out infinite;
+    transform-origin:50% 0%;
+  }
+  @keyframes swing{
+    0%,100%{transform:rotate(-6deg);}
+    50%{transform:rotate(6deg);}
+  }
+  .gen-buttons{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    font-family:'Baloo 2',cursive;
+    font-weight:700;
+    font-size:14.5px;
+    border:none;
+    border-radius:999px;
+    padding:13px 26px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease, filter .18s ease;
+    box-shadow:0 4px 0 rgba(0,0,0,0.14);
+    position:relative;
+    overflow:hidden;
+  }
+  .btn .ico{
+    display:inline-block;
+    transition:transform .35s ease;
+  }
+  .btn:hover:not(:disabled){
+    transform:translateY(-3px) scale(1.02);
+    filter:brightness(1.04);
+  }
+  .btn:hover:not(:disabled) .ico{transform:rotate(-18deg);}
+  .btn:active:not(:disabled){
+    transform:translateY(1px) scale(0.98);
+    box-shadow:0 2px 0 rgba(0,0,0,0.14);
+  }
+  .btn-primary{
+    background:linear-gradient(135deg, #FF8FA3, #FF6F8F);
+    color:#fff;
+  }
+  .btn-ghost{
+    background:var(--paper-2);
+    color:var(--ink-soft);
+    border:2px solid var(--line);
+    box-shadow:none;
+  }
+  .btn-ghost:hover:not(:disabled){
+    background:var(--card);
+    border-color:#cdbb9d;
+  }
+  .btn:disabled{opacity:0.6; cursor:default; transform:none !important;}
+  .btn.is-loading .ico{animation:spin .85s linear infinite;}
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+
+  #statusLine{
+    text-align:center;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    font-weight:600;
+    margin:14px 0 0;
+    min-height:16px;
+    transition:opacity .2s ease;
+  }
+
+  /* ---------- GRID ---------- */
+  .grid{
+    max-width:1080px;
+    margin:10px auto 0;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:22px;
+  }
+
+  /* ---------- CARD ---------- */
+  .card{
+    position:relative;
+    background:var(--card);
+    border-radius:20px;
+    border:1.5px solid var(--line);
+    padding:20px 18px 18px;
+    cursor:pointer;
+    transition:transform .18s cubic-bezier(.34,1.2,.64,1), box-shadow .18s ease;
+    box-shadow:0 3px 0 rgba(74,59,50,0.06);
+    opacity:0;
+    animation:cardIn .45s ease forwards;
+  }
+  @keyframes cardIn{
+    from{opacity:0; transform:translateY(10px) scale(0.98);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+  .card:hover{
+    transform:translateY(-5px) rotate(-0.5deg);
+    box-shadow:0 12px 22px rgba(74,59,50,0.12);
+  }
+  .sticker-badge{
+    position:absolute;
+    top:-16px;
+    left:-12px;
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    border:3px solid var(--card);
+    transform:rotate(-12deg);
+    box-shadow:0 3px 6px rgba(0,0,0,0.12);
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .card:hover .sticker-badge{transform:rotate(2deg) scale(1.08);}
+  .read-badge{
+    position:absolute;
+    top:16px;
+    right:16px;
+    font-size:11px;
+    font-weight:700;
+    color:var(--ink-soft);
+    background:var(--paper-2);
+    border-radius:999px;
+    padding:4px 10px;
+  }
+  .cat-tag{
+    font-family:'Baloo 2',cursive;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    padding:4px 10px;
+    border-radius:999px;
+    display:inline-block;
+    margin:14px 0 10px;
+  }
+  .card h3{
+    font-family:'Baloo 2',cursive;
+    font-size:19px;
+    font-weight:700;
+    line-height:1.28;
+    margin:0 0 8px;
+    color:var(--ink);
+  }
+  .card .hook{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    margin:0 0 14px;
+    font-weight:500;
+  }
+  .card .deco-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-top:2px dashed var(--line);
+    padding-top:12px;
+    margin-top:4px;
+  }
+  .mini-stickers{
+    font-size:16px;
+    letter-spacing:2px;
+    opacity:0.85;
+  }
+  .read-time{
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+
+  /* skeleton */
+  .skel{
+    background:var(--card);
+    border-radius:20px;
+    border:1.5px dashed var(--line);
+    padding:20px 18px;
+    height:230px;
+    position:relative;
+    overflow:hidden;
+  }
+  .skel::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation:shimmer 1.3s infinite;
+  }
+  @keyframes shimmer{
+    0%{transform:translateX(-100%);}
+    100%{transform:translateX(100%);}
+  }
+
+  .empty{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--ink-soft);
+  }
+  .empty .big{
+    font-size:48px;
+    margin-bottom:10px;
+    display:inline-block;
+    animation:bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob{
+    0%,100%{transform:translateY(0) rotate(0deg);}
+    50%{transform:translateY(-8px) rotate(-4deg);}
+  }
+
+  /* ---------- READER MODAL ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(74,59,50,0.45);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:40px 16px;
+    overflow-y:auto;
+    z-index:50;
+    opacity:0;
+    transition:opacity .18s ease;
+  }
+  .overlay.open{display:flex; opacity:1;}
+  .reader{
+    background:var(--paper);
+    max-width:640px;
+    width:100%;
+    border-radius:24px;
+    padding:0 0 36px;
+    position:relative;
+    box-shadow:0 20px 50px rgba(0,0,0,0.25);
+    animation:pop .22s cubic-bezier(.34,1.4,.64,1);
+  }
+  @keyframes pop{
+    from{transform:scale(0.94) translateY(10px); opacity:0;}
+    to{transform:scale(1) translateY(0); opacity:1;}
+  }
+  .reader-head{
+    border-radius:24px 24px 0 0;
+    padding:34px 30px 26px;
+    position:relative;
+  }
+  .reader-sticker{
+    font-size:46px;
+    display:inline-block;
+    transform:rotate(-8deg);
+    margin-bottom:10px;
+  }
+  .close-x{
+    position:absolute;
+    top:18px; right:18px;
+    width:34px; height:34px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.7);
+    border:none;
+    font-size:16px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .close-x:hover{transform:rotate(90deg) scale(1.08); background:#fff;}
+  .reader-head h2{
+    font-family:'Baloo 2',cursive;
+    font-size:26px;
+    margin:0 0 6px;
+    line-height:1.25;
+  }
+  .reader-head .meta{
+    font-size:12.5px;
+    font-weight:700;
+    opacity:0.75;
+  }
+  .reader-body{
+    padding:26px 30px 0;
+    font-size:15.5px;
+    line-height:1.75;
+    color:var(--ink);
+  }
+  .reader-body p{margin:0 0 16px;}
+  .fact-box{
+    background:var(--paper-2);
+    border:2px dashed var(--line);
+    border-radius:16px;
+    padding:14px 16px;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin:18px 30px 0;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:880px){
+    .sidebar{
+      position:static;
+      height:auto;
+      width:100%;
+      flex:1 1 auto;
+      border-right:none;
+      border-bottom:2px dashed var(--line);
+      padding:18px 16px 16px;
+      gap:14px;
+    }
+    .shell{flex-direction:column;}
+    .sidebar-logo, .sidebar-tagline, .date-pill{display:none;}
+    .cat-label{margin:0 0 -4px 4px;}
+    .cat-list{
+      flex-direction:row;
+      overflow-x:auto;
+      gap:8px;
+      padding-bottom:4px;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+    .cat-list::-webkit-scrollbar{display:none;}
+    .chip{flex:0 0 auto;}
+    .chip:hover{transform:translateY(-2px);}
+    .chip.active:hover{transform:translateY(0);}
+    .sidebar-footer{display:none;}
+    .main{padding:24px 16px 60px;}
+    .mobile-logo{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:9px;
+      margin-bottom:6px;
+    }
+    .mobile-logo .logo-sticker{font-size:30px; transform:rotate(-8deg);}
+    .mobile-logo h1{
+      font-family:'Baloo 2',cursive;
+      font-weight:800;
+      font-size:28px;
+      margin:0;
+      color:var(--ink);
+    }
+    .mobile-tagline{
+      text-align:center;
+      color:var(--ink-soft);
+      font-size:13px;
+      font-weight:600;
+      margin:0 0 14px;
+    }
+  }
+  @media (max-width:480px){
+    .gen-panel{padding:18px 16px; border-radius:20px;}
+    .grid{grid-template-columns:1fr 1fr; gap:12px;}
+    .card{padding:16px 14px 14px;}
+  }
+  @media (max-width:360px){
+    .grid{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001s !important; transition-duration:0.001s !important;}
+  }
+
+  ::-webkit-scrollbar{width:10px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:10px;}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-sticker">🍬</span>
+      <h1>Snack Reads</h1>
+    </div>
+    <p class="sidebar-tagline">tiny articles, big delight — a fresh batch every day</p>
+    <div class="date-pill" id="datePill">📅 loading…</div>
+
+    <div class="cat-label">Browse</div>
+    <div class="cat-list" id="catScroll"></div>
+
+    <div class="sidebar-footer">New bites baked daily, fresh from the kitchen.</div>
+  </nav>
+
+  <main class="main">
+    <div class="top-area">
+      <div class="mobile-logo">
+        <span class="logo-sticker">🍬</span>
+        <h1 class="display">Snack Reads</h1>
+      </div>
+      <p class="mobile-tagline">tiny articles, big delight — a fresh batch every day</p>
+
+      <div class="gen-panel">
+        <p class="gen-panel-title"><span class="sw">🍭</span> Bake something new</p>
+        <div class="gen-buttons">
+          <button class="btn btn-primary" id="generateBtn"><span class="ico">🔄</span> Refresh today's batch</button>
+          <button class="btn btn-ghost" id="surpriseBtn"><span class="ico">🎲</span> Surprise me (1 article)</button>
+        </div>
+        <p id="statusLine"></p>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="reader" id="readerCard"></div>
+</div>
+
+<script>
+const CATEGORIES = {
+  health:        { label:"Health",         sticker:"💪", emoji:["🩺","🥦","💧","🏃"], color:"var(--health)",        dark:"var(--health-d)",        bg:"var(--health-bg)" },
+  beauty:        { label:"Beauty",         sticker:"💄", emoji:["✨","💅","🌸","🪞"], color:"var(--beauty)",        dark:"var(--beauty-d)",        bg:"var(--beauty-bg)" },
+  wellbeing:     { label:"Mental wellbeing", sticker:"🧘", emoji:["🌿","☁️","💗","🌙"], color:"var(--wellbeing)",     dark:"var(--wellbeing-d)",     bg:"var(--wellbeing-bg)" },
+  productivity:  { label:"Productivity",   sticker:"⏰", emoji:["✅","📋","🎯","⚡"], color:"var(--productivity)",  dark:"var(--productivity-d)",  bg:"var(--productivity-bg)" },
+  finance:       { label:"Finance",        sticker:"💰", emoji:["🪙","📈","🏦","💳"], color:"var(--finance)",       dark:"var(--finance-d)",       bg:"var(--finance-bg)" },
+  business:      { label:"Business",       sticker:"💼", emoji:["📊","🤝","🏢","🚀"], color:"var(--business)",      dark:"var(--business-d)",      bg:"var(--business-bg)" },
+  technology:    { label:"Technology",     sticker:"🤖", emoji:["💻","🔌","📱","🛰️"], color:"var(--technology)",    dark:"var(--technology-d)",    bg:"var(--technology-bg)" },
+  facts:         { label:"Amazing facts",  sticker:"🌟", emoji:["🔭","🦋","🌍","🐙"], color:"var(--facts)",         dark:"var(--facts-d)",         bg:"var(--facts-bg)" },
+};
+
+let articles = [];
+let activeFilter = "all";
+
+function todayKey(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function setDatePill(){
+  const d = new Date();
+  const opts = { weekday:'long', month:'long', day:'numeric' };
+  document.getElementById('datePill').textContent = "📅 " + d.toLocaleDateString(undefined, opts);
+}
+
+function countFor(key){
+  if(key === 'all') return articles.length;
+  return articles.filter(a=>a.category===key).length;
+}
+
+function renderChips(){
+  const wrap = document.getElementById('catScroll');
+  const allActive = activeFilter === 'all';
+  let html = `<div class="chip ${allActive?'active':''}" data-cat="all" style="${allActive ? 'background:#4A3B32;' : ''}">
+      <span class="chip-emoji">🍭</span> All <span class="chip-count">${countFor('all')}</span>
+    </div>`;
+  for(const key in CATEGORIES){
+    const c = CATEGORIES[key];
+    const isActive = activeFilter === key;
+    html += `<div class="chip ${isActive?'active':''}" data-cat="${key}" style="${isActive ? `background:${c.color};` : ''}">
+        <span class="chip-emoji">${c.sticker}</span> ${c.label} <span class="chip-count">${countFor(key)}</span>
+      </div>`;
+  }
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.chip').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      activeFilter = el.dataset.cat;
+      renderChips();
+      renderGrid();
+    });
+  });
+}
+
+function pickEmoji(cat){
+  const arr = CATEGORIES[cat].emoji;
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function miniStickerRow(cat){
+  const arr = CATEGORIES[cat].emoji;
+  return arr.slice(0,3).join(' ');
+}
+
+function cardHTML(article, idx, animIdx){
+  const c = CATEGORIES[article.category] || CATEGORIES.facts;
+  const delay = Math.min(animIdx, 12) * 0.04;
+  return `
+  <div class="card" data-idx="${idx}" style="animation-delay:${delay}s;">
+    <div class="sticker-badge" style="background:${c.bg};">${article.emoji || c.sticker}</div>
+    <span class="cat-tag" style="background:${c.bg}; color:${c.dark};">${c.label}</span>
+    <h3>${escapeHtml(article.title)}</h3>
+    <p class="hook">${escapeHtml(article.hook)}</p>
+    <div class="deco-row">
+      <span class="mini-stickers">${miniStickerRow(article.category)}</span>
+      <span class="read-time">⏱ ${article.readTime || '1 min'}</span>
+    </div>
+  </div>`;
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  const filtered = activeFilter === 'all' ? articles : articles.filter(a=>a.category===activeFilter);
+  if(filtered.length === 0){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="big">🧁</div>
+      <p style="font-family:'Baloo 2',cursive; font-weight:700; font-size:18px; margin:0 0 6px;">No bites here yet</p>
+      <p style="margin:0;">Tap "Refresh today's batch" to bake some fresh articles.</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map((a, i)=>{
+    const realIdx = articles.indexOf(a);
+    return cardHTML(a, realIdx, i);
+  }).join('');
+  grid.querySelectorAll('.card').forEach(el=>{
+    el.addEventListener('click', ()=>openReader(parseInt(el.dataset.idx)));
+  });
+}
+
+function openReader(idx){
+  const a = articles[idx];
+  if(!a) return;
+  const c = CATEGORIES[a.category] || CATEGORIES.facts;
+  const overlay = document.getElementById('overlay');
+  const card = document.getElementById('readerCard');
+  const bodyParas = (a.body || []).map(p=>`<p>${escapeHtml(p)}</p>`).join('');
+  card.innerHTML = `
+    <div class="reader-head" style="background:${c.bg};">
+      <button class="close-x" id="closeX">✕</button>
+      <span class="reader-sticker">${a.emoji || c.sticker}</span>
+      <h2 style="color:${c.dark};">${escapeHtml(a.title)}</h2>
+      <span class="meta" style="color:${c.dark};">${c.label} · ⏱ ${a.readTime || '1 min'} read</span>
+    </div>
+    <div class="reader-body">
+      ${bodyParas}
+    </div>
+    ${a.funFact ? `<div class="fact-box"><span>${pickEmoji(a.category)}</span><span><strong style="color:var(--ink);">Snack fact:</strong> ${escapeHtml(a.funFact)}</span></div>` : ''}
+  `;
+  overlay.classList.add('open');
+  document.getElementById('closeX').addEventListener('click', closeReader);
+}
+function closeReader(){
+  document.getElementById('overlay').classList.remove('open');
+}
+document.getElementById('overlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'overlay') closeReader();
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape') closeReader();
+});
+
+function showSkeletons(n){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = Array.from({length:n}).map(()=>`<div class="skel"></div>`).join('');
+}
+
+function setStatus(msg){
+  const el = document.getElementById('statusLine');
+  if(el){
+    el.style.opacity = 0;
+    setTimeout(()=>{ el.textContent = msg; el.style.opacity = 1; }, 120);
+  }
+}
+
+async function apiCall(path, options){
+  const res = await fetch(path, options);
+  let data;
+  try{
+    data = await res.json();
+  }catch(e){
+    throw new Error(`Server returned an unexpected response (status ${res.status}).`);
+  }
+  if(!res.ok){
+    throw new Error(data.error || `Request failed (status ${res.status}).`);
+  }
+  return data;
+}
+
+async function generateBatch(){
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.classList.add('is-loading');
+  btn.innerHTML = `<span class="ico">🍳</span> Baking fresh articles…`;
+  showSkeletons(8);
+  setStatus("Asking the kitchen for a new batch — this can take 15-30 seconds.");
+
+  try{
+    const state = await apiCall('/api/generate-batch', { method:'POST' });
+    articles = state.articles || [];
+    renderChips();
+    renderGrid();
+    setStatus(state.lastGenerated ? "Last refreshed: " + new Date(state.lastGenerated).toLocaleString() : "");
+  }catch(err){
+    console.error(err);
+    alert("Couldn't bake a fresh batch: " + err.message);
+    renderGrid();
+    setStatus("");
+  }finally{
+    btn.disabled = false;
+    btn.classList.remove('is-loading');
+    btn.innerHTML = `<span class="ico">🔄</span> Refresh today's batch`;
+  }
+}
+
+async function generateSurprise(){
+  const btn = document.getElementById('surpriseBtn');
+  btn.disabled = true;
+  btn.classList.add('is-loading');
+  btn.innerHTML = `<span class="ico">🎲</span> Rolling…`;
+  const keys = Object.keys(CATEGORIES);
+  const cat = keys[Math.floor(Math.random()*keys.length)];
+
+  try{
+    const article = await apiCall('/api/generate-one', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ category: cat })
+    });
+    articles = [article].concat(articles);
+    renderChips();
+    renderGrid();
+    openReader(0);
+  }catch(err){
+    console.error(err);
+    alert("Couldn't roll a new article: " + err.message);
+  }finally{
+    btn.disabled = false;
+    btn.classList.remove('is-loading');
+    btn.innerHTML = `<span class="ico">🎲</span> Surprise me (1 article)`;
+  }
+}
+
+async function loadArticles(){
+  try{
+    const state = await apiCall('/api/articles');
+    articles = state.articles || [];
+    if(state.lastGenerated){
+      setStatus("Last refreshed: " + new Date(state.lastGenerated).toLocaleString());
+    }
+    if(articles.length === 0){
+      setStatus("The first batch is being baked in the background — check back in a moment, or tap refresh.");
+    }
+  }catch(e){
+    console.error(e);
+    setStatus("Couldn't reach the server.");
+  }
+  renderChips();
+  renderGrid();
+}
+
+document.getElementById('generateBtn').addEventListener('click', generateBatch);
+document.getElementById('surpriseBtn').addEventListener('click', generateSurprise);
+
+setDatePill();
+renderChips();
+loadArticles();
+setInterval(loadArticles, 60000);
+</script>
+</body>
+</html>
