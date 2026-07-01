@@ -658,7 +658,7 @@ const CATEGORIES = {
   beauty:        { label:"Beauty",         sticker:"💄", emoji:["✨","💅","🌸","🪞"], color:"var(--beauty)",        dark:"var(--beauty-d)",        bg:"var(--beauty-bg)" },
   wellbeing:     { label:"Mental wellbeing", sticker:"🧘", emoji:["🌿","☁️","💗","🌙"], color:"var(--wellbeing)",     dark:"var(--wellbeing-d)",     bg:"var(--wellbeing-bg)" },
   productivity:  { label:"Productivity",   sticker:"⏰", emoji:["✅","📋","🎯","⚡"], color:"var(--productivity)",  dark:"var(--productivity-d)",  bg:"var(--productivity-bg)" },
-  finance:       { label:"Finance",        sticker:"💰", emoji:["🪙","📈","🏦","💳"], color:"var(--finance)",       dark:"var(--finance-d)",       bg:"var(--finance-bg)" },
+  finance:       { label:"Finance",        sticker:"💰", emoji:["🪙","📈","互","💳"], color:"var(--finance)",       dark:"var(--finance-d)",       bg:"var(--finance-bg)" },
   business:      { label:"Business",       sticker:"💼", emoji:["📊","🤝","🏢","🚀"], color:"var(--business)",      dark:"var(--business-d)",      bg:"var(--business-bg)" },
   technology:    { label:"Technology",     sticker:"🤖", emoji:["💻","🔌","📱","🛰️"], color:"var(--technology)",    dark:"var(--technology-d)",    bg:"var(--technology-bg)" },
   facts:         { label:"Amazing facts",  sticker:"🌟", emoji:["🔭","🦋","🌍","🐙"], color:"var(--facts)",         dark:"var(--facts-d)",         bg:"var(--facts-bg)" },
@@ -682,19 +682,29 @@ function countFor(key){
   return articles.filter(a=>a.category===key).length;
 }
 
+// Deduplicates an array of articles based on their titles
+function deduplicateArticles(incomingArray) {
+  const seenTitles = new Set();
+  return incomingArray.filter(article => {
+    if (!article || !article.title) return false;
+    const cleanTitle = article.title.trim().toLowerCase();
+    if (seenTitles.has(cleanTitle)) {
+      return false; // Skip if duplicate
+    }
+    seenTitles.add(cleanTitle);
+    return true;
+  });
+}
+
 function flushOldArticles() {
   const MAX_LIMIT = 10;
   const categoriesToFlush = Object.keys(CATEGORIES);
   
   categoriesToFlush.forEach(cat => {
-    // Filter articles belonging to this category
     const catArticles = articles.filter(a => a.category === cat);
     
     if (catArticles.length > MAX_LIMIT) {
-      // Find the items to remove (the oldest ones at the end of the array)
       const allowedArticles = catArticles.slice(0, MAX_LIMIT);
-      
-      // Rebuild the articles list, replacing this category's batch with only the allowed 10
       articles = articles.filter(a => a.category !== cat).concat(allowedArticles);
     }
   });
@@ -844,7 +854,8 @@ async function generateBatch(){
 
   try{
     const state = await apiCall('/api/generate-batch', { method:'POST' });
-    articles = state.articles || [];
+    // Deduplicate incoming state articles
+    articles = deduplicateArticles(state.articles || []);
     flushOldArticles();
     renderChips();
     renderGrid();
@@ -875,11 +886,21 @@ async function generateSurprise(){
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ category: cat })
     });
-    articles = [article].concat(articles);
-    flushOldArticles();
-    renderChips();
-    renderGrid();
-    openReader(0);
+    
+    // Combine new surprise with existing ones and pass through deduplication
+    const rawArticles = [article].concat(articles);
+    const uniqueArticles = deduplicateArticles(rawArticles);
+    
+    // If the length didn't change, it means the surprise article was already in the list
+    if (uniqueArticles.length === articles.length) {
+      setStatus("Rolled a duplicate article! Try rolling again.");
+    } else {
+      articles = uniqueArticles;
+      flushOldArticles();
+      renderChips();
+      renderGrid();
+      openReader(0);
+    }
   }catch(err){
     console.error(err);
     alert("Couldn't roll a new article: " + err.message);
@@ -893,7 +914,8 @@ async function generateSurprise(){
 async function loadArticles(){
   try{
     const state = await apiCall('/api/articles');
-    articles = state.articles || [];
+    // Ensure background updates stay clean of duplicates
+    articles = deduplicateArticles(state.articles || []);
     flushOldArticles();
     if(state.lastGenerated){
       setStatus("Last refreshed: " + new Date(state.lastGenerated).toLocaleString());
