@@ -165,9 +165,17 @@
     margin-top:auto;
     font-size:11px;
     color:var(--ink-soft);
-    opacity:0.6;
+    opacity:0.8;
     padding:0 4px;
-    line-height:1.5;
+    line-height:1.6;
+  }
+  .sidebar-footer a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .sidebar-footer a:hover {
+    text-decoration: underline;
   }
 
   /* ---------- MAIN ---------- */
@@ -183,6 +191,7 @@
     text-align:center;
   }
   .mobile-logo{display:none;}
+  .mobile-footer{display:none;}
 
   /* ---------- GENERATE PANEL ---------- */
   .gen-panel{
@@ -558,6 +567,23 @@
       font-weight:600;
       margin:0 0 14px;
     }
+    .mobile-footer{
+      display:block;
+      text-align:center;
+      font-size:11px;
+      color:var(--ink-soft);
+      opacity:0.8;
+      margin-top:40px;
+      line-height:1.6;
+    }
+    .mobile-footer a{
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .mobile-footer a:hover{
+      text-decoration: underline;
+    }
   }
   @media (max-width:480px){
     .gen-panel{padding:18px 16px; border-radius:20px;}
@@ -589,7 +615,10 @@
     <div class="cat-label">Browse</div>
     <div class="cat-list" id="catScroll"></div>
 
-    <div class="sidebar-footer">New bites baked daily, fresh from the kitchen.</div>
+    <div class="sidebar-footer">
+      New bites baked daily, fresh from the kitchen.<br><br>
+      © Website made by <a href="https://github.com/NyeinHtutTin" target="_blank">Irene (Nyein Htut)</a>
+    </div>
   </nav>
 
   <main class="main">
@@ -611,6 +640,11 @@
     </div>
 
     <div class="grid" id="grid"></div>
+    
+    <div class="mobile-footer">
+      New bites baked daily, fresh from the kitchen.<br>
+      © Website made by <a href="https://github.com/Nyein-Htut" target="_blank">Irene (Nyein Htut)</a>
+    </div>
   </main>
 </div>
 
@@ -646,6 +680,24 @@ function setDatePill(){
 function countFor(key){
   if(key === 'all') return articles.length;
   return articles.filter(a=>a.category===key).length;
+}
+
+function flushOldArticles() {
+  const MAX_LIMIT = 10;
+  const categoriesToFlush = Object.keys(CATEGORIES);
+  
+  categoriesToFlush.forEach(cat => {
+    // Filter articles belonging to this category
+    const catArticles = articles.filter(a => a.category === cat);
+    
+    if (catArticles.length > MAX_LIMIT) {
+      // Find the items to remove (the oldest ones at the end of the array)
+      const allowedArticles = catArticles.slice(0, MAX_LIMIT);
+      
+      // Rebuild the articles list, replacing this category's batch with only the allowed 10
+      articles = articles.filter(a => a.category !== cat).concat(allowedArticles);
+    }
+  });
 }
 
 function renderChips(){
@@ -793,6 +845,7 @@ async function generateBatch(){
   try{
     const state = await apiCall('/api/generate-batch', { method:'POST' });
     articles = state.articles || [];
+    flushOldArticles();
     renderChips();
     renderGrid();
     setStatus(state.lastGenerated ? "Last refreshed: " + new Date(state.lastGenerated).toLocaleString() : "");
@@ -823,6 +876,7 @@ async function generateSurprise(){
       body: JSON.stringify({ category: cat })
     });
     articles = [article].concat(articles);
+    flushOldArticles();
     renderChips();
     renderGrid();
     openReader(0);
@@ -840,6 +894,7 @@ async function loadArticles(){
   try{
     const state = await apiCall('/api/articles');
     articles = state.articles || [];
+    flushOldArticles();
     if(state.lastGenerated){
       setStatus("Last refreshed: " + new Date(state.lastGenerated).toLocaleString());
     }
