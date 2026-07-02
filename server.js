@@ -54,6 +54,35 @@ function saveArticles(state) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2));
 }
 
+const VALID_CATEGORIES = Object.keys(CATEGORIES);
+
+// LLMs sometimes return slightly wrong category strings, e.g. "mental_wellbeing",
+// "well-being", "amazing facts" (with a space), "tech" etc. This maps them back.
+const CAT_ALIASES = {
+  "mental wellbeing": "wellbeing",
+  "mental_wellbeing": "wellbeing",
+  "mental-wellbeing": "wellbeing",
+  "mental health": "wellbeing",
+  "amazing facts": "facts",
+  "amazing_facts": "facts",
+  "fun facts": "facts",
+  "fun_facts": "facts",
+  "amazing": "facts",
+  "tech": "technology",
+  "biz": "business",
+  "personal finance": "finance",
+};
+
+function normalizeCategory(raw) {
+  if (!raw) return "facts";
+  const lower = String(raw).toLowerCase().trim();
+  if (VALID_CATEGORIES.includes(lower)) return lower;
+  if (CAT_ALIASES[lower]) return CAT_ALIASES[lower];
+  // partial match as last resort
+  const partial = VALID_CATEGORIES.find(k => lower.includes(k) || k.includes(lower));
+  return partial || "facts";
+}
+
 function extractJson(text) {
   let clean = text.replace(/```json|```/g, "").trim();
   const firstBracket = clean.indexOf("[");
@@ -144,6 +173,7 @@ Example shape: {"articles":[{"category":"health","title":"...","hook":"...","emo
 
   const stamped = result.map((a) => ({
     ...a,
+    category: normalizeCategory(a.category),
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     createdAt: new Date().toISOString(),
   }));
@@ -163,6 +193,7 @@ Return ONLY a single JSON object, no markdown fences, with exactly these fields:
 "category": "${key}", "title" (under 9 words), "hook" (one sentence under 18 words), "emoji" (single emoji fitting the specific content), "readTime" (e.g. "1 min"), "body" (array of 3-4 short paragraph strings), "funFact" (one short surprising fact, under 25 words).`;
 
   const result = await callGroq(prompt);
+  result.category = normalizeCategory(result.category);
   result.id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   result.createdAt = new Date().toISOString();
 
