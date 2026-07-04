@@ -23,7 +23,7 @@
     --finance:#8FBF7F;    --finance-d:#3E7A2C;  --finance-bg:#E6F3DF;
     --business:#7FA8D9;   --business-d:#2C5A95; --business-bg:#E2EEFA;
     --technology:#B79CE0; --technology-d:#5B3E96;--technology-bg:#EDE5FA;
-    --facts:#FFA567;      --facts-d:#C0590E;    --facts-bg:#FFE8D3;
+    --facts:#FFA567;      --facts-d:#C0590E;   --facts-bg:#FFE8D3;
   }
 
   *{box-sizing:border-box;}
@@ -165,9 +165,19 @@
     margin-top:auto;
     font-size:11px;
     color:var(--ink-soft);
-    opacity:0.6;
+    opacity:0.75;
     padding:0 4px;
-    line-height:1.5;
+    line-height:1.6;
+  }
+  .sidebar-footer a{
+    color:var(--ink);
+    text-decoration:none;
+    font-weight:600;
+    transition:color 0.15s ease;
+  }
+  .sidebar-footer a:hover{
+    color:var(--health-d);
+    text-decoration:underline;
   }
 
   /* ---------- MAIN ---------- */
@@ -534,7 +544,14 @@
     .chip{flex:0 0 auto;}
     .chip:hover{transform:translateY(-2px);}
     .chip.active:hover{transform:translateY(0);}
-    .sidebar-footer{display:none;}
+    
+    /* Make footer visible and styled nicely on mobile layout */
+    .sidebar-footer{
+      display:block;
+      margin-top:10px;
+      text-align:center;
+    }
+    
     .main{padding:24px 16px 60px;}
     .mobile-logo{
       display:flex;
@@ -589,7 +606,10 @@
     <div class="cat-label">Browse</div>
     <div class="cat-list" id="catScroll"></div>
 
-    <div class="sidebar-footer">New bites baked daily, fresh from the kitchen.</div>
+    <div class="sidebar-footer">
+      New bites baked daily, fresh from the kitchen.<br>
+      Built by <a href="https://github.com/Nyein-Htut" target="_blank" rel="noopener noreferrer">Irene (Nyein Htut Tin)</a>
+    </div>
   </nav>
 
   <main class="main">
